@@ -5,6 +5,7 @@
 //
 
 import AVKit
+import Combine
 import Foundation
 
 final class AppAudio {
@@ -12,6 +13,8 @@ final class AppAudio {
     private init() {}
 
     private var audioEngine: AVAudioEngine?
+
+    private var cancellables: Set<AnyCancellable> = []
 
     func setup() {
         let session = AVAudioSession.sharedInstance()
@@ -23,9 +26,19 @@ final class AppAudio {
         } catch {
             AppLogger.error(error)
         }
+
+        start()
+
+        NotificationCenter.default.publisher(for: AVAudioSession.routeChangeNotification, object: nil)
+            .sink { _ in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.handleAudioRouteChange()
+                }
+            }
+            .store(in: &cancellables)
     }
 
-    func start() {
+    private func start() {
         self.audioEngine?.stop()
         self.audioEngine = nil
 
@@ -44,5 +57,15 @@ final class AppAudio {
             AppLogger.info("cannot start AVAudioEngine")
             AppLogger.error(error)
         }
+    }
+
+    func restart() {
+        start()
+    }
+
+    private func handleAudioRouteChange() {
+        AppLogger.info("Detect AVAudioSession.routeChangeNotification")
+
+        restart()
     }
 }

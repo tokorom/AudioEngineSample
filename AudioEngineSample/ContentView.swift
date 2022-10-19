@@ -10,17 +10,9 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         VStack {
-            Button("Play Audio", action: playAudio)
+            Text("AppAudio is started")
         }
         .padding()
-    }
-}
-
-// MARK: - Actions
-
-extension ContentView {
-    private func playAudio() {
-        AppAudio.shared.start()
     }
 }
 
