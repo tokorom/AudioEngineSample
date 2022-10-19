@@ -17,7 +17,7 @@ final class AppAudio {
         let session = AVAudioSession.sharedInstance()
 
         do {
-            try session.setCategory(.playAndRecord, options: [.mixWithOthers, .allowBluetooth, .allowBluetoothA2DP, .allowAirPlay])
+            try session.setCategory(.playAndRecord, options: [.allowBluetooth, .allowBluetoothA2DP, .allowAirPlay])
             try session.setActive(true)
             AppLogger.info("AVAudioSession setActive")
         } catch {
