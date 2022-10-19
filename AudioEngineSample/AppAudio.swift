@@ -14,6 +14,9 @@ final class AppAudio {
 
     private var audioEngine: AVAudioEngine?
 
+    private(set) lazy var currentOutputNodeSubject: CurrentValueSubject<AVAudioSessionPortDescription?, Never> = .init(nil)
+    private(set) lazy var useBuildInReceiverSubject: CurrentValueSubject<Bool, Never> = .init(true)
+
     private var cancellables: Set<AnyCancellable> = []
 
     func setup() {
@@ -39,14 +42,16 @@ final class AppAudio {
     }
 
     private func start() {
-        self.audioEngine?.stop()
-        self.audioEngine = nil
+        stop()
 
         let audioEngine = AVAudioEngine()
 
         let inputNode = audioEngine.inputNode
         let outputNode = audioEngine.mainMixerNode
         audioEngine.connect(inputNode, to: outputNode, format: inputNode.outputFormat(forBus: 0))
+
+        print(outputNode)
+        print("outputNode: \(outputNode)")
 
         do {
             try audioEngine.start()
@@ -59,12 +64,28 @@ final class AppAudio {
         }
     }
 
+    private func stop() {
+        audioEngine?.stop()
+        audioEngine = nil
+    }
+
     func restart() {
         start()
     }
 
     private func handleAudioRouteChange() {
         AppLogger.info("Detect AVAudioSession.routeChangeNotification")
+
+        let description = AVAudioSession.sharedInstance().currentRoute
+        let output = description.outputs.first
+
+        currentOutputNodeSubject.send(output)
+
+        if let output, output.portType == .builtInReceiver {
+            useBuildInReceiverSubject.send(true)
+        } else {
+            useBuildInReceiverSubject.send(false)
+        }
 
         restart()
     }
