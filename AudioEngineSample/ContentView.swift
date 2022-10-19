@@ -10,12 +10,17 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+            Button("Play Audio", action: playAudio)
         }
         .padding()
+    }
+}
+
+// MARK: - Actions
+
+extension ContentView {
+    private func playAudio() {
+        AppAudio.shared.start()
     }
 }
 
